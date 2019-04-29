@@ -43,3 +43,176 @@ Sales <- read_csv("Dataset_PPOL670/Sales.csv")
 Tax <- read_csv("Dataset_PPOL670/Tax.csv")
 Access <- read_csv("Dataset_PPOL670/Access.csv")
 ```
+
+```{r, fig.width=5.6,fig.height=4}
+#Graph showing the cigarette use pattern for middle school/high school students in 2014
+Survey_data <- Youth %>%
+  select(YEAR, LocationAbbr, State=LocationDesc, TopicDesc, MeasureDesc,
+         Response, Data_Value_Unit, Data_Value, Gender, Race, Age, Education,
+         GeoLocation) %>%
+  filter(YEAR == 2014, TopicDesc == 'Cigarette Use (Youth)',
+         Gender == 'Overall', Education == 'Middle School') %>%
+  mutate(Response = fct_relevel(Response, c("Ever", "Current", "Frequent")))
+
+ggplot(Survey_data, aes(x = State, y = Data_Value)) +
+  geom_bar(stat = "identity", position = "dodge", aes(fill=factor(Response))) +
+  scale_fill_manual(values = c("#007aa5", "#0099cc", "#e6e8fa")) +
+  guides(fill=guide_legend(title="Youth Cigarette Use in Percent")) +
+  theme_minimal() +
+  labs(title="Figure 1: Youth Cigarette Use in Some States, 2014",
+       subtitle = "In middle school",
+        x ="Year", y = "Percentage of Youth Tobacco Use",
+       caption="Source: Centers for Disease Control and Prevention") +
+    theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text = element_text(size = 10), legend.position = "bottom",
+  text=element_text(family="Times New Roman"))
+
+```
+
+```{r, fig.width=5.6,fig.height=4}
+Survey_data1 <- Youth %>%
+  select(YEAR, LocationAbbr, State=LocationDesc, TopicDesc, MeasureDesc,
+         Response, Data_Value_Unit, Data_Value, Gender, Race, Age, Education,
+         GeoLocation) %>%
+  filter(YEAR == 2014, TopicDesc == 'Cigarette Use (Youth)',
+         Gender == 'Overall', Education == 'High School') %>%
+  mutate(Response = fct_relevel(Response, c("Ever", "Current", "Frequent")))
+
+ggplot(Survey_data1, aes(x = State, y = Data_Value)) +
+  geom_bar(stat = "identity", position = "dodge", aes(fill=factor(Response))) +
+  scale_fill_manual(values = c("#007aa5", "#0099cc", "#e6e8fa")) +
+  guides(fill=guide_legend(title="Youth Cigarette Use in Percent")) +
+  theme_minimal() +
+  labs(title="Figure 2: Youth Cigarette Use in Some States, 2014",
+       subtitle = "In high school",
+        x ="Year", y = "Percentage of Youth Tobacco Use",
+       caption="Source: Centers for Disease Control and Prevention") +
+    theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), legend.position="bottom",
+  text=element_text(family="Times New Roman"))
+```
+
+```{r}
+Survey_data2 <- Youth %>%
+    filter(YEAR >= 1999 & YEAR <= 2014, TopicDesc == 'Cessation (Youth)', Gender == 'Overall',
+           Education == 'Middle School', LocationAbbr == 'US') %>%
+  select(Year=YEAR,Measurement = MeasureDesc, Percent = Data_Value) %>%
+  arrange(desc(Year))
+
+kable(Survey_data2, align = "c") %>%
+  kable_styling("striped", font_size = 11, full_width = F) %>%
+  row_spec(0, bold = T, color = "white", background = "#007aa5") %>%
+  footnote(general = "Table 3: Youth cessation attempts among middle school students. ")
+```
+
+```{r}
+Survey_data3 <- Youth %>%
+    filter(YEAR >= 1999 & YEAR <= 2014, TopicDesc == 'Cessation (Youth)', Gender == 'Overall',
+           Education == 'High School', LocationAbbr == 'US') %>%
+  select(Year=YEAR,Measurement = MeasureDesc, Percent = Data_Value) %>%
+  arrange(desc(Year))
+
+kable(Survey_data3, align = "c") %>%
+  kable_styling("striped", font_size = 11, full_width = F) %>%
+  row_spec(0, bold = T, color = "white", background = "#007aa5") %>%
+  footnote(general = "Table 4: Youth cessation attempts among high school students. ")
+```
+
+```{r, echo=FALSE, fig.width=5.6,fig.height=4}
+#Access for cigarette sales
+Access_data1 <- Access %>%
+  select(Year = YEAR, State = LocationDesc, Measurement = MeasureDesc,
+         Provision = ProvisionGroupDesc) %>%
+  filter(Year >= 1999 & Year <= 2014, Measurement == "Cigarette Sales") %>%
+  group_by(Year) %>%
+  count(Provision) %>%
+  spread(key = Provision, value = n)
+#Graph
+ggplot(Access_data1) +
+  geom_rect(data=NULL,aes(xmin=2006,xmax=2014,ymin=-Inf,ymax=Inf), fill="#e6e8fa") +
+  geom_line(aes(x = Year, y = Enforcement), color = "#00ccff", size=1.5) +
+  geom_point(aes(x = Year, y = Enforcement), color = "grey") +
+  geom_text(aes(x=2011, label="Enforcement", y=510), colour="#00ccff", size=3) +
+  geom_line(aes(x = Year, y = Penalties), color = "#007aa5", size=1.5) +
+  geom_point(aes(x = Year, y = Penalties), color = "grey") +
+  geom_text(aes(x=2011, label="Penalties", y=1935), colour="#007aa5", size=3) +
+  geom_line(aes(x = Year, y = Restrictions), color = "#3333cc", size=1.5) +
+  geom_point(aes(x = Year, y = Restrictions), color = "grey") +
+  geom_text(aes(x=2011, label="Restrictions", y=1000), colour="#3333cc", size=3) +
+  geom_text(aes(x=2007, label="The change occured since 2006", y=100), colour="black", size=3) +
+  scale_x_continuous(breaks = seq(1999,2014,3)) +
+  theme_classic() +
+  labs(title="Figure 5: Legislations on Youth Access to Tobacco, 1999 - 2014",
+       subtitle="Provisions to cut youth's access through cigarette sales",
+        x ="Year", y = "Numbers",
+       caption="Source: Centers for Disease Control and Prevention") +
+  theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), text=element_text(family="Times New Roman"))
+
+```
+
+
+# Appendix A {-}
+```{r, echo=FALSE, fig.width=8.5,fig.height=8.5}
+##Tax on tabacco
+Tax_data1 <- Tax %>%
+  select(StateAbbr = LocationAbbr, State = LocationDesc, Year, SubMeasureDesc, Data_Value, Data_Value_Type) %>%
+  filter(Year >= 1999 & Year <= 2014, SubMeasureDesc == "Federal and State Tax per pack")
+
+##Graph
+ggplot(Tax_data1, aes(x = Year, y = Data_Value)) +
+  geom_bar(stat="identity", fill = "#e6e8fa") +
+  geom_smooth(method="loess", colour="#007aa5") +
+  geom_vline(xintercept=2006, colour="steelblue", linetype="dashed") +
+  scale_x_continuous(breaks = c(1999,2006,2014)) +
+  facet_wrap( ~ State, ncol=6) +
+  theme_minimal() +
+  labs(title="Tax Burden on Tobacco by State, 1999 - 2014",
+        x ="Year", y = "Federal and State Tax Per Pack in Dollars",
+       caption="Source: Centers for Disease Control and Prevention") +
+  theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), text=element_text(family="Times New Roman"))
+```
+
+# Appendix B{-}
+```{r, echo=FALSE,  fig.width=7,fig.height=8}
+##Tobacco Sales
+Sales_data1 <- Sales %>%
+  select(StateAbbr = LocationAbbr, State = LocationDesc, Year = 'FFY Year', Sales = Data_Value) %>%
+  filter(Year >= 1999 & Year <= 2014)
+##Heatmap
+ggplot(Sales_data1, aes(Year, StateAbbr)) +
+  geom_tile(aes(fill = Sales), colour = "white") +
+  scale_fill_gradient(low = "#e6e8fa", high = "#007aa5") +
+  scale_x_continuous(breaks = seq(1999,2014,3)) +
+  guides(fill=guide_legend(title="Percent in Total")) +
+  theme_classic() +
+  labs(title="Youth Tobacco Sales by State, 1999 - 2014",
+        x ="Year", y = "",
+       caption="Source: Centers for Disease Control and Prevention") +
+    theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), legend.position="bottom", text=element_text(family="Times New Roman"))
+```
+
+# Appendix C {-}
+```{r}
+#Access for cigarette vending machines
+Access_data2 <- Access %>%
+  select(Year = YEAR, State = LocationDesc, Measurement = MeasureDesc,
+         Provision = ProvisionGroupDesc) %>%
+  filter(Year >= 1999 & Year <= 2014, Measurement == "Cigarette Vending Machines") %>%
+  group_by(Year) %>%
+  count(Provision) %>%
+  spread(key = Provision, value = n)
+#Table
+kable(Access_data2, align = "c") %>%
+  kable_styling("striped", font_size = 12, full_width = F) %>%
+  row_spec(0, bold = T, color = "white", background = "#007aa5") %>%
+  footnote(general = "Youth access to tobacco through cigarette vending machines. ")
+```
+
