@@ -1,5 +1,5 @@
 ---
-title: "Youth Tobacco Use and Tax Burden on Tobacco"
+title: "The Study of Youth Tobacco Use Control"
 author: "Xinran Deng, Wen Pan"
 date: "2019/4/29"
 output: 
@@ -23,6 +23,7 @@ Access <- read_csv(file="Data/Access.csv")
 Tax <- read_csv(file="Data/Tax.csv")
 Youth <- read_csv(file="Data/Youth.csv")
 ```
+
 ## Problem and Background
 
 \begin{columns}
@@ -69,6 +70,109 @@ Smoking by youth and young adults can cause serious and potentially deadly healt
 
 - For visualizations: package"ggplot2", "kableExtra"
 
-- For regressions: package"plm", "stargazer", "gplots"
+- For statistical analysis: package"plm", "stargazer", "gplots"
 
 ## Results
+
+- Tax Burden on Tobacco by State, 1999 - 2014
+```{r, echo=FALSE}
+##Tax on tabacco
+Tax_data1 <- Tax %>%
+  select(StateAbbr = LocationAbbr, State = LocationDesc, Year, SubMeasureDesc, Data_Value, Data_Value_Type) %>%
+  filter(Year >= 1999 & Year <= 2014, SubMeasureDesc == "Federal and State Tax per pack")
+
+##Graph
+ggplot(Tax_data1, aes(x = Year, y = Data_Value)) +
+  geom_bar(stat="identity", fill = "#e6e8fa") +
+  geom_smooth(method="loess", colour="#007aa5") +
+  geom_vline(xintercept=2006, colour="steelblue", linetype="dashed") +
+  scale_x_continuous(breaks = c(1999,2006,2014)) +
+  facet_wrap( ~ State, ncol=6) +
+  theme_minimal() +
+  labs(x ="Year", y = "Federal and State Tax Per Pack in Dollars",
+       caption="Source: Centers for Disease Control and Prevention") +
+  theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10))
+```
+
+## Results
+
+- Youth Tobacco Sales From 1999 to 2014
+```{r, echo = FALSE}
+#Data processing
+Sales_data1 <- Sales %>%
+  select( StateAbbr = LocationAbbr, State = LocationDesc, Year = 'FFY Year', Sales = Data_Value) %>%
+  filter(Year >= 1999 & Year <= 2014)
+#Heatmap
+ggplot(Sales_data1, aes(Year, State)) +
+  geom_tile(aes(fill = Sales), colour = "white") +
+  scale_fill_gradient(low = "#e6e8fa", high = "#007aa5") +
+  scale_x_continuous(breaks = seq(1999,2014,3)) +
+  guides(fill=guide_legend(title="The Proportion of Youtu Tobacco Sales")) +
+  theme_classic() +
+  labs(x ="Year", y = "",
+       caption="Source: Centers for Disease Control and Prevention")
+```
+
+## Results
+- Legislation to youth access
+
+```{r, echo=FALSE, fig.width=4.2,fig.height=3, fig.align='center'}
+#Access for cigarette sales
+Access_data1 <- Access %>%
+  select(Year = YEAR, State = LocationDesc, Measurement = MeasureDesc,
+         Provision = ProvisionGroupDesc) %>%
+  filter(Year >= 1999 & Year <= 2014, Measurement == "Cigarette Sales") %>%
+  group_by(Year) %>%
+  count(Provision) %>%
+  spread(key = Provision, value = n)
+#Graph
+ggplot(Access_data1) +
+  geom_rect(data=NULL,aes(xmin=2006,xmax=2014,ymin=-Inf,ymax=Inf), fill="#e6e8fa") +
+  geom_line(aes(x = Year, y = Enforcement), color = "#00ccff", size=1.5) +
+  geom_point(aes(x = Year, y = Enforcement), color = "grey") +
+  geom_text(aes(x=2011, label="Enforcement", y=510), colour="#00ccff", size=3) +
+  geom_line(aes(x = Year, y = Penalties), color = "#007aa5", size=1.5) +
+  geom_point(aes(x = Year, y = Penalties), color = "grey") +
+  geom_text(aes(x=2011, label="Penalties", y=1935), colour="#007aa5", size=3) +
+  geom_line(aes(x = Year, y = Restrictions), color = "#3333cc", size=1.5) +
+  geom_point(aes(x = Year, y = Restrictions), color = "grey") +
+  geom_text(aes(x=2011, label="Restrictions", y=1000), colour="#3333cc", size=3) +
+  geom_text(aes(x=2007, label="The change occured since 2006", y=100), colour="black", size=3) +
+  scale_x_continuous(breaks = seq(1999,2014,3)) +
+  theme_classic() +
+  labs(subtitle="Provisions to cut youth's access through cigarette sales",
+        x ="Year", y = "Numbers",
+       caption="Source: Centers for Disease Control and Prevention") +
+  theme(plot.title = element_text(color = "black", size = 5, face = "bold"),
+  plot.caption = element_text(color = "black", size = 4, face = "italic"),
+  axis.text=element_text(size=5))
+
+```
+
+
+
+## Results 
+
+```{r, echo=FALSE}
+   knitr::include_graphics('./1.png')
+```
+
+## Results
+
+```{r, echo=FALSE}
+   knitr::include_graphics('./2.png')
+```
+
+## Limitations
+
+- Unable to find datasets on other factors that may contribute to youth tobacco use 
+
+- Not enough covariates that we could include in the regression model - limited internal validity
+
+## Next Steps
+
+- To explore the effect of legislation for youth access to tobacco
+
+- To explore the amount of tax that can encourage quitting among youth smokers
