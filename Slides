@@ -69,4 +69,6 @@ Smoking by youth and young adults can cause serious and potentially deadly healt
 
 - For visualizations: package"ggplot2", "kableExtra"
 
-- For regressions: package"", "", ""
+- For regressions: package"plm", "stargazer", "gplots"
+
+## Results
