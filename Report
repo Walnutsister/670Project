@@ -6,6 +6,7 @@ geometry: margin = 1in
 header-includes:
 - \usepackage{placeins}
 - \usepackage{setspace}\doublespacing
+- \usepackage{dcolumn}\newcolumntype{d}[1]{D{.}{\cdot}{#1}}
 output:
   pdf_document:
     fig_caption: yes
