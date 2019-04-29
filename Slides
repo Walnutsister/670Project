@@ -10,3 +10,63 @@ output:
     fig_caption: true
     slide_level: 2
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+Sales <- read_csv(file="Data/Sales.csv")
+Access <- read_csv(file="Data/Access.csv")
+Tax <- read_csv(file="Data/Tax.csv")
+Youth <- read_csv(file="Data/Youth.csv")
+```
+## Problem and Background
+
+\begin{columns}
+\begin{column}{0.48\textwidth}
+Smoking by youth and young adults can cause serious and potentially deadly health issues immediately and into adulthood. Young people who smoke are in danger of:
+
+- addiction to nicotine
+
+- reduced lung growth
+
+- reduced lung function
+
+- early cardiovascular damage
+\end{column}
+\begin{column}{0.48\textwidth}
+```{r, echo=FALSE, out.width = "80%"}
+   knitr::include_graphics('./slide1.png')
+```
+\end{column}
+\end{columns}
+
+## Problem and Background
+
+- Preventing tobacco use among the youth population is critical.
+
+- Tobacco tax increases are one of the most effective ways to reduce smoking and other tobacco use.
+
+- So, whether higher tax burden will result in a decrease in tobacco sales and uses among youth?
+
+
+## Research Design
+
+- Explore the relationship between the tax burden on tobacco and the use of youth tobacco use (contolling for state and year)
+
+- Use different graphs and tables to visualize the topics regarding youth tobacco sales, legislations of youth access, tax burden on tobacco, youth tobacco use pattern.
+
+```{r, echo=FALSE}
+   knitr::include_graphics('./logo.jpg')
+```
+
+## Methods and Tools
+
+- For data processing: package"tidyverse"
+
+- For visualizations: package"ggplot2", "kableExtra"
+
+- For regressions: package"", "", ""
