@@ -1,0 +1,12 @@
+---
+title: "Youth Tobacco Use and Tax Burden on Tobacco"
+author: "Xinran Deng, Wen Pan"
+date: "2019/4/29"
+output: 
+  beamer_presentation:
+    theme: "Berlin"
+    colortheme: "lily"
+    fonttheme: "structurebold"
+    fig_caption: true
+    slide_level: 2
+---
