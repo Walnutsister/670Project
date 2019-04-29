@@ -14,3 +14,32 @@ urlcolor: black
 linkcolor: black
 fontsize: 12pt
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+options(tinytyex.verbose = TRUE)
+```
+
+```{r, include=FALSE}
+require(plm)
+require(dplyr)
+require(stargazer) 
+require(gplots)
+require(tidyverse)
+require(ggplot2)
+require(kableExtra)
+require(tufte)
+require(extrafont) 
+font_import()
+loadfonts()
+```
+
+```{r, include=FALSE}
+Youth <- read_csv("Dataset_PPOL670/Youth.csv")
+Sales <- read_csv("Dataset_PPOL670/Sales.csv")
+Tax <- read_csv("Dataset_PPOL670/Tax.csv")
+Access <- read_csv("Dataset_PPOL670/Access.csv")
+```
