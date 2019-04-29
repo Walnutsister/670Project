@@ -1,0 +1,16 @@
+---
+title: "Youth Tobacco Use Control"
+author: "Xinran Deng; Wen Pan"
+date: 04/29/2019
+geometry: margin = 1in
+header-includes:
+- \usepackage{placeins}
+- \usepackage{setspace}\doublespacing
+output:
+  pdf_document:
+    fig_caption: yes
+    number_sections: yes
+urlcolor: black
+linkcolor: black
+fontsize: 12pt
+---
