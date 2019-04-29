@@ -44,7 +44,96 @@ Sales <- read_csv("Dataset_PPOL670/Sales.csv")
 Tax <- read_csv("Dataset_PPOL670/Tax.csv")
 Access <- read_csv("Dataset_PPOL670/Access.csv")
 ```
+# Precessing data and combine four dataframes into one
+```{r}
+#read csv file to R
+Sales_dat <- read.csv(file="Data/Sales.csv", header=TRUE, sep=",")
+```
 
+```{r}
+Sales_dat1 <- select(Sales_dat, StateAbbr = LocationAbbr, State = LocationDesc, Year = FFY.Year, Sales = Data_Value)
+```
+
+```{r}
+Tax_dat <- read.csv(file="Data/Tax.csv", header=TRUE, sep=",")
+```
+
+```{r}
+Tax_dat1 <- select(Tax_dat, StateAbbr = LocationAbbr, State = LocationDesc, Year, Measure = SubMeasureDesc, Tax = Data_Value, Data_Value_Type)
+
+```
+
+```{r}
+levels(Tax_dat1$Measure)
+
+Tax_pct_dat = filter(Tax_dat1, Measure == unique(Tax_dat1$Measure)[3])
+
+Tax_state_dat = filter(Tax_dat1, Measure == unique(Tax_dat1$Measure)[6])
+```
+
+```{r}
+# merge three data frames by ID and Country
+
+Reg_dat <- Reduce(function(x,y) merge(x = x, y = y, by = c("State", "Year")), 
+       list(Sales_dat1, Tax_pct_dat, Tax_state_dat)) %>%
+  select(., State, Year, StateAbbr, Sales_pct = Sales, - StateAbbr.y, - StateAbbr.x, - Measure.x, Tax_pct = Tax.x, - Data_Value_Type.x, - Measure.y, Tax_dollar = Tax.y, - Data_Value_Type.y) 
+
+# Convert Tax_pct and Tax_dollar from factor to numeric
+Reg_dat$Tax_pct <- as.numeric(as.character(Reg_dat$Tax_pct))
+Reg_dat$Tax_dollar <- as.numeric(as.character(Reg_dat$Tax_dollar))
+
+```
+
+```{r}
+# Descriptive statistics
+stargazer(Reg_dat, type = "text", title="Descriptive statistics", digits=1, out="table1.txt")
+```
+# Regressionn Analysis for panel data
+```{r}
+data("Reg_dat", package = "plm")
+
+# Pooling estimator 
+pooling <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "pooling")
+summary(pooling)
+```
+```{r}
+# Fixed effect estimator
+fixed <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "within")
+summary(fixed)
+```
+
+```{r}
+# Random effects estimator
+random <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "random")
+summary(random)
+```
+
+```{r}
+stargazer(pooling, fixed, random, type="text",
+ dep.var.labels=c("Sales to Minors in percentage"),
+ covariate.labels=c("Tax/Retail Price","Tax per Pack"), out="models.txt")
+```
+
+```{r}
+# Display the fixed effects (constants for each state)
+fixef(fixed) 
+```
+
+#Comparing models
+```{r}
+# Testing for fixed effects, null: pooling better than fixed
+pFtest(fixed, pooling)
+```
+
+```{r}
+phtest(fixed, random)
+```
+
+
+# Visualizations
 ```{r, fig.width=5.6,fig.height=4}
 #Graph showing the cigarette use pattern for middle school/high school students in 2014
 Survey_data <- Youth %>%
