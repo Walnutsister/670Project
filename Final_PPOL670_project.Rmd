@@ -1,0 +1,437 @@
+---
+title: "Youth Tobacco Use Control"
+author: "Xinran Deng; Wen Pan"
+date: 04/29/2019
+geometry: margin = 1in
+header-includes:
+- \usepackage{placeins}
+- \usepackage{setspace}\doublespacing
+- \usepackage{dcolumn}\newcolumntype{d}[1]{D{.}{\cdot}{#1}}
+output:
+  pdf_document:
+    fig_caption: yes
+    number_sections: yes
+urlcolor: black
+linkcolor: black
+fontsize: 12pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+options(tinytyex.verbose = TRUE)
+```
+
+```{r, include=FALSE}
+require(plm)
+require(dplyr)
+require(stargazer) 
+require(gplots)
+require(tidyverse)
+require(ggplot2)
+require(kableExtra)
+require(tufte)
+require(extrafont) 
+font_import()
+loadfonts()
+```
+
+```{r, include=FALSE}
+Youth <- read_csv("Dataset_PPOL670/Youth.csv")
+Sales <- read_csv("Dataset_PPOL670/Sales.csv")
+Tax <- read_csv("Dataset_PPOL670/Tax.csv")
+Access <- read_csv("Dataset_PPOL670/Access.csv")
+```
+
+# Problem Statement and Background
+It is commonly believed that youth use of tobacco products in any form is unsafe. In 2018, about 7 of every 100 middle school students (7.2%) and about 27 of every 100 high school students (27.1%) reported current use of a tobacco product. In addition, tobacco use usually starts mostly during adolescence and may continue through later period of life. Therefore, preventing tobacco use among the youth population is critical. 
+
+There are some activities which can potentially reduce the youth tobacco product use, including increasing the costs for using tobacco, prohibiting tobacco use in public spaces and also promoting less tobacco use through various of media messages and community programs. However, statistics shows that there is still high prevalence of youth tobacco use and sales in the United States. 
+
+Tobacco tax increases are one of the most effective ways to reduce smoking and other tobacco use, especially among kids. The statistics from the Campaign for Tobacco-Free Kids shows that "Nationally, every 10 percent increase in cigarette prices reduces youth smoking by about seven percent and total cigarette consumption by about four percent". We are interested to see whether higher tax burden will result in  a decrease in tobacco sales and uses among youth.
+
+# Research Design
+
+## Regression
+Our goal is to explore the relationship between the tax burden on tobacco and the use of youth tobacco use (contolling for the state and year fixed effects) using four datasets. Our hypothesis is that the higher the tax burden on tobacco use, the less tobacco sales among youth population. We think that higher tax burden will result in a decrease in tobacco sales and uses among youth. We will use the regression to determine the hypothesized relationship between tax burden and the youth tobacco sales and uses. If the sign of the estimates we get for the key independent variable is negative, then we can say the higher tax burden is associated with lower youth tobacco sales and uses. In addition, we can get the magnitude of the effect.
+
+First, we will combine the four panel datasets into one dataframe. Then, we have a panel dataset of the youth tobacco sales, tax as a percentage of retail price, and state tax per pack for each state-year.
+
+In the case of the regression, we are accounting for fixed effects (or tabacoo sales to minors percentage independent of time), while the second is accounting for random effects (including time).
+
+## Visualizations
+
+We will Use different graphs and tables to visualize the topics shown below:
+1) Bar Graph of Cigarette Use Among High School Smokers/Middle School Smokers
+- Explore the cigarette use pattern among high/middle school students by state and year.
+2) Tables of Current Smokers Who Want to Quit/Quit Attempts in past years 
+- Explore the trends of current youth trying/wanting to quit smoking.
+3) Heatmap of youth tobacco sales
+- Explore the sales trends and patterns of tobacco sales by state and year.
+4) Graph of state tax per pack of cigarettes
+5) Graph and table showing different access legislation by state 
+
+
+## Data Source
+The data source that we intend to use is from Centers for Disease Control and Prevention website about youth tobacco use, sales, legislations and the tax burden on tobacco. They are crucial to further analyze the current situation of youth tobacco use and how different tax burden affect the youth tobacco use.
+
+Specifically, we used:
+
+1. The Tax Burden on Tobacco, 1970-2017: Data include federal and state-level information regarding taxes applied to the price of a pack of cigarettes.
+
+2. Youth Tobacco Survey (YTS) Data: Tobacco topics included are cigarette smoking prevalence, cigarette smoking frequency, smokeless tobacco products prevalence and quit attempts.
+
+3. SAMHSA Synar Reports: Youth Tobacco Sales:Data presents findings on compliance of the Synar Amendment aimed at decreasing youth access to tobacco.
+
+4. CDC STATE System Tobacco Legislation - Youth Access:Data include information related to restrictions, enforcement and penalties associated with the sale of cigarettes to youth through retail sales and vending machines.
+
+# Methods & Tools
+
+For the regression analysis part, since we have the panel data, we use package "plm" to conduct the regression analysis including the pooling, fixed effects and random effects model. In this part, we also use package "stargazer" which creates well-formatted regression tables, with multiple models side-by-side, as well as for summary statistics tables.
+
+For the visualization part, We use the package"ggplot2" and "kableExtra" to produce graphics and tables. With the package"kableExtra", we're able to transform the dataframe to tables. Also, we could adjust the features and appearance of the table easily. With the package"ggplot2", we're able to produce bar graph, heatmap, line graph, faceted graph and change the elements in accordance with our own preferences.
+
+
+# Results & Discussion
+
+## Tax Burden on Tobacco
+As the figure shown in appendix A, from 1999 to 2014, there is an upward trend for the tax burden on tobacco on the national level. It seems that year 2006 is a watershed. Before 2006, the tax burden rose slowly. After 2006, the tax burden went up a bit faster than before. 
+
+On the state level, the federal and state tax per pack cigarette goes up even faster in some states(for example, New York, Massachusetts, Connecticut) than the other states(for example, Virginia, Missouri, Nevada).
+
+## Youth Tobacco Use Pattern
+In general, there are more high school students than middle school students have ever tried cigarette at least once before. This also holds true for the proportion of current smokers and frequent smokers.
+
+The figure 1 shows the cigarette use frequency among middle school students in states which have available survey data regarding youth tobacco use. In 2014, up to nearly 25% middle school students in Alabama have ever tried to smoke. And nearly 3% middle school students have become frequent smokers. 
+
+```{r, fig.width=4.9,fig.height=3.5, fig.align='center'}
+#Graph showing the cigarette use pattern for middle school/high school students in 2014
+Survey_data <- Youth %>%
+  select(YEAR, LocationAbbr, State=LocationDesc, TopicDesc, MeasureDesc,
+         Response, Data_Value_Unit, Data_Value, Gender, Race, Age, Education,
+         GeoLocation) %>%
+  filter(YEAR == 2014, TopicDesc == 'Cigarette Use (Youth)',
+         Gender == 'Overall', Education == 'Middle School') %>%
+  mutate(Response = fct_relevel(Response, c("Ever", "Current", "Frequent")))
+
+ggplot(Survey_data, aes(x = State, y = Data_Value)) +
+  geom_bar(stat = "identity", position = "dodge", aes(fill=factor(Response))) +
+  scale_fill_manual(values = c("#007aa5", "#0099cc", "#e6e8fa")) +
+  guides(fill=guide_legend(title="Youth Cigarette Use in Percent")) +
+  theme_minimal() +
+  labs(title="Figure 1: Youth Cigarette Use in Some States, 2014",
+       subtitle = "In middle school",
+        x ="Year", y = "Percentage of Youth Tobacco Use",
+       caption="Source: Centers for Disease Control and Prevention") +
+    theme(plot.title = element_text(color = "black", size = 11, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text = element_text(size = 9), legend.position = "bottom",
+  text=element_text(family="Times New Roman"))
+
+```
+
+The figure 2 shows the cigarette use frequency among high school students in states which have available survey data regarding youth tobacco use. In 2014, up to nearly 45% middle school students in Alabama have ever tried to smoke. And nearly 5% middle school students have become frequent smokers. 
+
+```{r, fig.width=4.9, fig.height=3.5, fig.align='center'}
+Survey_data1 <- Youth %>%
+  select(YEAR, LocationAbbr, State=LocationDesc, TopicDesc, MeasureDesc,
+         Response, Data_Value_Unit, Data_Value, Gender, Race, Age, Education,
+         GeoLocation) %>%
+  filter(YEAR == 2014, TopicDesc == 'Cigarette Use (Youth)',
+         Gender == 'Overall', Education == 'High School') %>%
+  mutate(Response = fct_relevel(Response, c("Ever", "Current", "Frequent")))
+
+ggplot(Survey_data1, aes(x = State, y = Data_Value)) +
+  geom_bar(stat = "identity", position = "dodge", aes(fill=factor(Response))) +
+  scale_fill_manual(values = c("#007aa5", "#0099cc", "#e6e8fa")) +
+  guides(fill=guide_legend(title="Youth Cigarette Use in Percent")) +
+  theme_minimal() +
+  labs(title="Figure 2: Youth Cigarette Use in Some States, 2014",
+       subtitle = "In high school",
+        x ="Year", y = "Percentage of Youth Tobacco Use",
+       caption="Source: Centers for Disease Control and Prevention") +
+    theme(plot.title = element_text(color = "black", size = 11, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=9), legend.position="bottom",
+  text=element_text(family="Times New Roman"))
+```
+
+The smoking cessation situation looks similar between middle school students and high school students. 
+
+As table 3 shown below, on the nationl level, from 2002 to 2014, there are more than half of the current cigarette smoker attempting to quit in past year among middle school students. In 2014, there are 58.5% current cigarette smokers attempted to quit smoking in the past, and 62.1% current smokers expressed that they want to quit. 
+
+```{r}
+Survey_data2 <- Youth %>%
+    filter(YEAR >= 1999 & YEAR <= 2014, TopicDesc == 'Cessation (Youth)', Gender == 'Overall',
+           Education == 'Middle School', LocationAbbr == 'US') %>%
+  select(Year=YEAR,Measurement = MeasureDesc, Percent = Data_Value) %>%
+  arrange(desc(Year))
+
+kable(Survey_data2, align = "c") %>%
+  kable_styling("striped", font_size = 10, full_width = F) %>%
+  row_spec(0, bold = T, color = "white", background = "#007aa5") %>%
+  footnote(general = "Table 3: Youth cessation attempts among middle school students. ")
+```
+
+As table 4 shown below, the situation for high school students looks almost the same as that for middle school students. Roughly speaking, from 2002 to 2014, the proportion of current cigarette smokers who attempted to quit in the past steadily increased among high school students. 
+
+```{r}
+Survey_data3 <- Youth %>%
+    filter(YEAR >= 1999 & YEAR <= 2014, TopicDesc == 'Cessation (Youth)', Gender == 'Overall',
+           Education == 'High School', LocationAbbr == 'US') %>%
+  select(Year=YEAR,Measurement = MeasureDesc, Percent = Data_Value) %>%
+  arrange(desc(Year))
+
+kable(Survey_data3, align = "c") %>%
+  kable_styling("striped", font_size = 10, full_width = F) %>%
+  row_spec(0, bold = T, color = "white", background = "#007aa5") %>%
+  footnote(general = "Table 4: Youth cessation attempts among high school students. ")
+```
+
+## Youth Tobacco Sales
+In general, from 1999 to 2014, youth tobacco sales gradually decreased. As the figure in appendix B shown, in 2014, youth tobacco sales constitutes about 10% of all tobacco sales in most states. Surprisingly, in 2000, the proportion of youth tobacco sales constitutes a half of all tobacco sales in Wyoming. This situation has beem alleviated since 2001. 
+
+## Legislation on Youth Access to Tobacco 
+As figure 5 shown below, the total number of restrictions, enforcement and penalties associated with the sale of cigarette to youth through retail sales suddenly went up since 2006. This also holds true to the youth tobacco sales through vending machines ,as shown in the table of appendix C. The change could be attributed to the Youth Access to Tobacco Prevention Act of 2005, which claims that "It is unlawful for any a person to sell, furnish, give, distribute, purchase for, or provide any a minor under the age of eighteen years with cigarettes, tobacco, cigarette paper, a tobacco product". 
+
+```{r, echo=FALSE, fig.width=4.9,fig.height=3.5, fig.align='center'}
+#Access for cigarette sales
+Access_data1 <- Access %>%
+  select(Year = YEAR, State = LocationDesc, Measurement = MeasureDesc,
+         Provision = ProvisionGroupDesc) %>%
+  filter(Year >= 1999 & Year <= 2014, Measurement == "Cigarette Sales") %>%
+  group_by(Year) %>%
+  count(Provision) %>%
+  spread(key = Provision, value = n)
+#Graph
+ggplot(Access_data1) +
+  geom_rect(data=NULL,aes(xmin=2006,xmax=2014,ymin=-Inf,ymax=Inf), fill="#e6e8fa") +
+  geom_line(aes(x = Year, y = Enforcement), color = "#00ccff", size=1.5) +
+  geom_point(aes(x = Year, y = Enforcement), color = "grey") +
+  geom_text(aes(x=2011, label="Enforcement", y=510), colour="#00ccff", size=3) +
+  geom_line(aes(x = Year, y = Penalties), color = "#007aa5", size=1.5) +
+  geom_point(aes(x = Year, y = Penalties), color = "grey") +
+  geom_text(aes(x=2011, label="Penalties", y=1935), colour="#007aa5", size=3) +
+  geom_line(aes(x = Year, y = Restrictions), color = "#3333cc", size=1.5) +
+  geom_point(aes(x = Year, y = Restrictions), color = "grey") +
+  geom_text(aes(x=2011, label="Restrictions", y=1000), colour="#3333cc", size=3) +
+  geom_text(aes(x=2007, label="The change occured since 2006", y=100), colour="black", size=3) +
+  scale_x_continuous(breaks = seq(1999,2014,3)) +
+  theme_classic() +
+  labs(title="Figure 5: Legislations on Youth Access to Tobacco, 1999 - 2014",
+       subtitle="Provisions to cut youth's access through cigarette sales",
+        x ="Year", y = "Numbers",
+       caption="Source: Centers for Disease Control and Prevention") +
+  theme(plot.title = element_text(color = "black", size = 11, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), text=element_text(family="Times New Roman"))
+
+```
+
+## Regression Results
+
+```{r, include=FALSE}
+#read csv file to R
+Sales_dat <- read_csv("Dataset_PPOL670/Sales.csv")
+```
+
+```{r, include=FALSE}
+Sales_dat1 <- select(Sales_dat, StateAbbr = LocationAbbr, State = LocationDesc, Year = 'FFY Year', Sales = Data_Value)
+```
+
+```{r, include=FALSE}
+Tax_dat <- read_csv("Dataset_PPOL670/Tax.csv")
+```
+
+```{r, include=FALSE}
+Tax_dat1 <- select(Tax_dat, StateAbbr = LocationAbbr, State = LocationDesc, Year, Measure = SubMeasureDesc, Tax = Data_Value, Data_Value_Type)
+
+```
+
+```{r, include=FALSE}
+levels(Tax_dat1$Measure)
+
+Tax_pct_dat = filter(Tax_dat1, Measure == unique(Tax_dat1$Measure)[3])
+
+Tax_state_dat = filter(Tax_dat1, Measure == unique(Tax_dat1$Measure)[6])
+```
+
+```{r, include=FALSE}
+# merge three data frames by ID and Country
+
+Reg_dat <- Reduce(function(x,y) merge(x = x, y = y, by = c("State", "Year")), 
+       list(Sales_dat1, Tax_pct_dat, Tax_state_dat)) %>%
+  select(., State, Year, StateAbbr, Sales_pct = Sales, - StateAbbr.y, - StateAbbr.x, - Measure.x, Tax_pct = Tax.x, - Data_Value_Type.x, - Measure.y, Tax_dollar = Tax.y, - Data_Value_Type.y) 
+
+# Convert Tax_pct and Tax_dollar from factor to numeric
+Reg_dat$Tax_pct <- as.numeric(as.character(Reg_dat$Tax_pct))
+Reg_dat$Tax_dollar <- as.numeric(as.character(Reg_dat$Tax_dollar))
+
+```
+
+Now we have a panel dataset of the youth tobacco sales, tax as a percentage of retail price, and state tax per pack for each state-year.
+
+```{r, results="asis"}
+# Descriptive statistics
+stargazer(Reg_dat, type = "latex", title="Descriptive statistics", digits=1, header = FALSE, out="table1.txt")
+```
+
+```{r, include=FALSE}
+# Heterogeneity across states (or entities)
+plotmeans(Sales_pct ~ State, main="Heterogeineity across states", data=Reg_dat)
+```
+
+```{r, include=FALSE}
+# Heterogeneity across years 
+plotmeans(Sales_pct ~ Year, main="Heterogeineity across years", data=Reg_dat)
+```
+
+
+```{r, include=FALSE}
+data("Reg_dat", package = "plm")
+
+# Pooling estimator 
+pooling <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "pooling")
+summary(pooling)
+```
+
+
+```{r, include=FALSE}
+# Fixed effect estimator
+fixed <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "within")
+summary(fixed)
+```
+
+```{r, include=FALSE}
+# Random effects estimator
+random <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "random")
+summary(random)
+```
+
+```{r, echo = F , comment = "" , message=FALSE, warning=FALSE, results="asis"}
+options(xtable.comment = FALSE)
+stargazer(pooling, fixed, random, type = "latex", header = FALSE, title="Fixed Effects Results", align=TRUE, dep.var.labels=c("Sales to Minors in percentage"),
+ covariate.labels=c("Tax/Retail Price","Tax per Pack"), out="models.txt", no.space=TRUE)
+```
+
+In the case of the regression, we are accounting for fixed effects (or tabacoo sales to minors percentage independent of time), while the second is accounting for random effects (including time).
+
+In the fixed effect model, the coefficient of Tax_pct indicates the sales to minors decreases 0.171 percentage point overtime, on average per state, when federal and state tax as a percentage of retail price increases by one percetage point, holding tax per pack constant. The coefficient is statistically significant. The coefficient of Tax_dollar indicates the sales to minors decreases 6.479 percentage point overtime, on average per state, when state tax per pack increases by one dollar, holding federal and state tax as a percentage of retail price constant. The coefficient is statistically significant as well.
+
+From the regression results, we can see that both tax as a percentage of retail price and state tax per pack are negatively associated with the percentage of tabacoo sales to minors.
+
+```{r, include=FALSE}
+# Display the fixed effects (constants for each state)
+fixef(fixed) 
+```
+
+
+```{r}
+# Testing for fixed effects, null: pooling better than fixed
+pFtest(fixed, pooling)
+```
+
+As we can see from the F test results, the p-value is < 0.05 so the fixed effects model is a better choice compared to the pooling model.
+
+Interpretation of the coefficients for random model is tricky since they include both
+the within-entity and between-entity effects. In our case, the coefficient for tax_pct represents the average effect of tax as a percentage of retail price over the tabacoo sales to minor when tax as a percentage of retail price changes across time and between states by one unit - one percentage increase in the tax/retail price across time and between states is associated with 0.124 decrease in the percentage of sales to minors, holding tax per pack constant. The coefficient for tax_dollar represents - one dollar increase in the state tax per pack across time and between states is associated with 5.181 decrease in the percentage of sales to minors, holding tax_pct constant. Both results are statistically significant since the p-value < 0.05.
+
+In addition, the p-value for the F statistics is < 0.05, so the random model is ok. This is a F test to see whether all the coefficients in the model are different than zero.
+
+To decide between fixed or random effects we can run a Hausman test where the null
+hypothesis is that the preferred model is random effects vs. the alternative the fixed
+effects. It basically tests whether the unique errors are correlated with the regressors, the null hypothesis is they are not. If the p-value is significant (for example <0.05) then use fixed effects, if not use random effects.
+
+```{r}
+phtest(fixed, random)
+```
+
+From the Hausman Test results, we can see that the p-value is less than 0.05, so we will use fixed effect model.
+
+## Next Steps
+For future research, 
+
+# Appendix A {-}
+```{r, echo=FALSE, fig.width=8.5,fig.height=8.5}
+##Tax on tabacco
+Tax_data1 <- Tax %>%
+  select(StateAbbr = LocationAbbr, State = LocationDesc, Year, SubMeasureDesc, Data_Value, Data_Value_Type) %>%
+  filter(Year >= 1999 & Year <= 2014, SubMeasureDesc == "Federal and State Tax per pack")
+
+##Graph
+ggplot(Tax_data1, aes(x = Year, y = Data_Value)) +
+  geom_bar(stat="identity", fill = "#e6e8fa") +
+  geom_smooth(method="loess", colour="#007aa5") +
+  geom_vline(xintercept=2006, colour="steelblue", linetype="dashed") +
+  scale_x_continuous(breaks = c(1999,2006,2014)) +
+  facet_wrap( ~ State, ncol=6) +
+  theme_minimal() +
+  labs(title="Tax Burden on Tobacco by State, 1999 - 2014",
+        x ="Year", y = "Federal and State Tax Per Pack in Dollars",
+       caption="Source: Centers for Disease Control and Prevention") +
+  theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), text=element_text(family="Times New Roman"))
+```
+
+# Appendix B{-}
+```{r, echo=FALSE,  fig.width=7,fig.height=8}
+##Tobacco Sales
+Sales_data1 <- Sales %>%
+  select(StateAbbr = LocationAbbr, State = LocationDesc, Year = 'FFY Year', Sales = Data_Value) %>%
+  filter(Year >= 1999 & Year <= 2014)
+##Heatmap
+ggplot(Sales_data1, aes(Year, StateAbbr)) +
+  geom_tile(aes(fill = Sales), colour = "white") +
+  scale_fill_gradient(low = "#e6e8fa", high = "#007aa5") +
+  scale_x_continuous(breaks = seq(1999,2014,3)) +
+  guides(fill=guide_legend(title="Percent in Total")) +
+  theme_classic() +
+  labs(title="Youth Tobacco Sales by State, 1999 - 2014",
+        x ="Year", y = "",
+       caption="Source: Centers for Disease Control and Prevention") +
+    theme(plot.title = element_text(color = "black", size = 12, face = "bold"),
+  plot.caption = element_text(color = "black", size = 9, face = "italic"),
+  axis.text=element_text(size=10), legend.position="bottom", text=element_text(family="Times New Roman"))
+```
+
+# Appendix C {-}
+```{r}
+#Access for cigarette vending machines
+Access_data2 <- Access %>%
+  select(Year = YEAR, State = LocationDesc, Measurement = MeasureDesc,
+         Provision = ProvisionGroupDesc) %>%
+  filter(Year >= 1999 & Year <= 2014, Measurement == "Cigarette Vending Machines") %>%
+  group_by(Year) %>%
+  count(Provision) %>%
+  spread(key = Provision, value = n)
+#Table
+kable(Access_data2, align = "c") %>%
+  kable_styling("striped", font_size = 12, full_width = F) %>%
+  row_spec(0, bold = T, color = "white", background = "#007aa5") %>%
+  footnote(general = "Youth access to tobacco through cigarette vending machines. ")
+```
+
+# Appendix D (Pooling estimator) {-}
+```{r, echo=FALSE}
+data("Reg_dat", package = "plm")
+
+# Pooling estimator 
+pooling <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "pooling")
+summary(pooling)
+```
+
+# Appendix E (Random effect estimator) {-}
+```{r, echo=FALSE}
+# Random effects estimator
+random <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
+          data = Reg_dat, index = c("State","Year"), model = "random")
+summary(random)
+```
+
