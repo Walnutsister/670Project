@@ -84,9 +84,9 @@ Reg_dat$Tax_dollar <- as.numeric(as.character(Reg_dat$Tax_dollar))
 
 ```
 
-```{r}
+```{r, results="asis"}
 # Descriptive statistics
-stargazer(Reg_dat, type = "text", title="Descriptive statistics", digits=1, out="table1.txt")
+stargazer(Reg_dat, type = "latex", title="Descriptive statistics", digits=1, header = FALSE, out="table1.txt")
 ```
 # Regressionn Analysis for panel data
 ```{r}
@@ -111,10 +111,10 @@ random <- plm(Sales_pct ~ Tax_pct + Tax_dollar,
 summary(random)
 ```
 
-```{r}
-stargazer(pooling, fixed, random, type="text",
- dep.var.labels=c("Sales to Minors in percentage"),
- covariate.labels=c("Tax/Retail Price","Tax per Pack"), out="models.txt")
+```{r, echo = F , comment = "" , message=FALSE, warning=FALSE, results="asis"}
+options(xtable.comment = FALSE)
+stargazer(pooling, fixed, random, type = "latex", header = FALSE, title="Fixed Effects Results", align=TRUE, dep.var.labels=c("Sales to Minors in percentage"),
+ covariate.labels=c("Tax/Retail Price","Tax per Pack"), out="models.txt", no.space=TRUE)
 ```
 
 ```{r}
