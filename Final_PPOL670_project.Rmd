@@ -1,5 +1,5 @@
 ---
-title: "Youth Tobacco Use Control"
+title: "The Study of Youth Tobacco Use"
 author: "Xinran Deng; Wen Pan"
 date: 04/29/2019
 geometry: margin = 1in
