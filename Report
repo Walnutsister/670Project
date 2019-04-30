@@ -35,7 +35,7 @@ require(kableExtra)
 require(tufte)
 require(extrafont) 
 font_import()
-loadfonts()
+loadfonts() 
 ```
 
 ```{r, include=FALSE}
